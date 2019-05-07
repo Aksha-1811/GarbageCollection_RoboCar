@@ -1,0 +1,64 @@
+#include <RCSwitch.h>
+
+#define LED 13
+#define M1 10
+#define M2 11
+
+#define IR1 A0
+#define IR2 A1
+
+RCSwitch mySwitch = RCSwitch();
+
+#define SPEED 120
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  pinMode(M1, OUTPUT);
+  pinMode(M2, OUTPUT);
+   
+  digitalWrite(M1, LOW);
+  digitalWrite(M2, LOW);
+
+  Serial.begin(115200);  
+  mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2
+}
+
+void loop() {
+byte ir1, ir2;
+  if (mySwitch.available()) {
+    if(mySwitch.getReceivedValue() == 5755916){
+      Serial.println("Empty");
+    }else{
+      Serial.println("Full");
+      digitalWrite(LED, HIGH);
+      do{
+        ir1 = digitalRead(IR1);
+        ir2 = digitalRead(IR2);
+
+        if(ir1){
+          digitalWrite(M1, LOW);
+        }else{
+          analogWrite(M1, SPEED);
+        }
+        if(ir2){
+          digitalWrite(M2, LOW);
+        }else{
+          analogWrite(M2, SPEED);
+        }
+
+        Serial.print(ir1);
+        Serial.print(' ');
+        Serial.print(ir2);
+        Serial.print(' ');
+        Serial.println("Moving");
+        delay(10);
+      }while(!ir1 || !ir2);
+      Serial.println("Stopped");
+      digitalWrite(LED, LOW);
+    }
+    mySwitch.resetAvailable();
+  }
+  
+
+  delay(100);
+}
